@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { getTestJson } from './services/spotifyService';
-import Header from './components/Header';
+import Home from './components/pages/Home';
+import Navbar from "./components/Navbar";
+import RoutesComponent from "./Routes";
 
 function App() {
     const [data, setData] = useState([]);
@@ -35,7 +37,11 @@ function App() {
     // if (error) return <h1>Error: {error}</h1>;
 
     return (
-        <Header/>
+        <div>
+            <Navbar/>
+            <RoutesComponent/>
+        </div>
+
     );
 }
 

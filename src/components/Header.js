@@ -10,23 +10,7 @@ import cardImage5 from '../images/card5.png';
 const Header = () => {
     return (
         <header className="header">
-            <div className="navbar">
-                <div className="text-logo-container">
-                    <div className="logo">
-                        <img src={logo} alt="Logo"/>
-                    </div>
-                    <div className="spotify-text">
-                        <span>Spotify</span>
-                        <span>Runner</span>
-                    </div>
-                </div>
-                <div className="navbar-right">
-                    <a href="#discover">Discover</a>
-                    <a href="#playlists">Playlists</a>
-                    <a href="#profile">Liked Songs</a>
-                    <a href="#settings">Login</a>
-                </div>
-            </div>
+
             <div className="banner">
                 <div className="hero-container">
                     <h1 className="text-run">RUN</h1>
@@ -34,30 +18,32 @@ const Header = () => {
                     <h1 className="text-beat">BEAT</h1>
                 </div>
             </div>
+            <div className="spacer"></div> {/* Spacer to create controlled distance */}
+            <div className="feature-text">
+                <h2 className="feature-title">Features</h2>
+                <p className="feature-subtext">
+                    Whether you're looking for motivation or just want to keep the beat,
+                    Spotify Runner delivers songs that match your running cadence
+                </p>
+            </div>
 
             <div className="card-container">
+
                 <div className="card" style={{backgroundImage: `url(${cardImage}`}}>
 
-                    <h3 className="card-title">HIP HOP</h3>
+                    <h3 className="card-title">DEMO PLAYLISTS</h3>
                     <button className="preview-button">Preview</button>
                 </div>
                 <div className="card" style={{backgroundImage: `url(${cardImage2}`}}>
 
-                    <h3 className="card-title">LATINO</h3>
+                    <h3 className="card-title">YOUR PLAYLISTS</h3>
                     <button className="preview-button">Preview</button>
                 </div>
                 <div className="card" style={{backgroundImage: `url(${cardImage3}`}}>
-                    <h3 className="card-title">POP</h3>
+                    <h3 className="card-title">YOUR LIKED SONGS</h3>
                     <button className="preview-button">Preview</button>
                 </div>
-                <div className="card" style={{backgroundImage: `url(${cardImage4}`}}>
-                    <h3 className="card-title">ROCK</h3>
-                    <button className="preview-button">Preview</button>
-                </div>
-                <div className="card" style={{backgroundImage: `url(${cardImage5}`}}>
-                    <h3 className="card-title">TECHNO</h3>
-                    <button className="preview-button">Preview</button>
-                </div>
+
             </div>
         </header>
     );

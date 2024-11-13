@@ -1,103 +1,36 @@
 .header {
-    position: relative;
-    width: 100%;
-    height: 100vh;
-    background: url('../images/SRHeroIcon.png') no-repeat center center;
-    background-size: cover;
-}
-
-.navbar {
-    display: flex;
-    align-items: center;
-    padding: 1rem;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 1000;
-}
-
-.navbar-right {
-    display: flex;
-    gap: 1rem;
-    margin-left: auto;
-    padding-right:20px;
-}
-
-.navbar-right a {
-    display: inline-block;
-    padding: 0.5rem 1.5rem;
-    border-radius: 30px;
-    background-color: rgba(0, 0, 0, 0.5); /* Slightly transparent */
-    color: white;
-    font-size: 1rem;
-    font-weight: 500;
-    text-decoration: none;
-    opacity: 0; /* Start invisible */
-    transform: translateY(-100px); /* Start above view */
-    transition: background-color 0.3s ease, color 0.3s ease;
-    animation: waveDrop 0.8s ease-out forwards;
-}
-
-.navbar-right a:nth-child(1) {
-    animation-delay: 0s;
-}
-
-.navbar-right a:nth-child(2) {
-    animation-delay: 0.2s;
-}
-
-.navbar-right a:nth-child(3) {
-    animation-delay: 0.4s;
-}
-
-.navbar-right a:nth-child(4) {
-    animation-delay: 0.6s;
-}
-
-.navbar-right a:hover {
-    background-color: #FFD700; /* Highlight yellow on hover */
-    color: black; /* Change text color to black for contrast */
-}
-
-.text-logo-container {
-    display: flex;
-    align-items: center;
-    margin-left: 1rem;
-}
-
-.logo img {
-    width: 100px;
-    margin-right: 10px; /* Space between logo and text */
-}
-
-.spotify-text {
     display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 100%;
+    background: url('../images/SRHeroIcon.png') no-repeat center center;
+    background-size: cover;
     color: white;
-    font-size: 2.0rem;
-    line-height: 1;
+    padding: 2rem;
 }
 
-
 .banner {
-    position: relative;
+   /* position: relative;*/
+    margin-top: 4rem;
     width: 100%;
     height: 100%;
     z-index: 1; /* Below the navbar */
+    margin-bottom: 4rem;
 }
 
+/* Center .hero-container without offset */
 .hero-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    position: absolute;
-    top: 25%;
-    left: 30%;
-    transform: translate(-50%, -50%);
+    position: relative; /* Set to relative */
     text-align: center;
-    z-index: 2; /* Higher than banner background, but lower than navbar */
+    z-index: 2;
+    /*top: -30%;*/
+    left: -25%;
 }
 
 .hero-container h1 {
@@ -151,13 +84,38 @@
     /*transform: translateX(100%); /* Start from the right */
 }
 
+.spacer {
+    height: 20vh; /* Adjust this value to control spacing */
+    margin-bottom: 5vh;
+}
+
+.feature-text {
+
+    text-align: center;
+    align-self: center;
+    max-width: 600px;
+}
+
+.feature-title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 1rem;
+}
+
+.feature-subtext {
+    font-size: 1rem;
+    margin-top: 0.5rem;
+    line-height: 1.5;
+    opacity: 0.9;
+
+}
+
+
 .card-container {
     display: flex;
     gap: 2.0rem;
     justify-content: center;
-    position: absolute;
-    bottom: 5rem;
-    z-index: 10;
+    margin-top: 2rem; /* Adds space between the feature text and the cards */
     width: 100%;
 }
 
@@ -182,7 +140,9 @@
     font-weight: bold;
     color: #ffffff;
     margin-top: 0.5rem;
-    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8); /* Dark shadow for better visibility */
+   /* background: #282c34;*/
+   /* border-radius: 15px;*/
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 1); /* Dark shadow for better visibility */
 }
 
 .preview-button {
