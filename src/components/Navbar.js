@@ -15,10 +15,10 @@ const Navbar = () => {
                 </div>
             </div>
             <div className="navbar-right">
-                <a href="#discover">Discover</a>
-                <a href="#playlists">Playlists</a>
-                <a href="#profile">Liked Songs</a>
-                <a href="#settings">Login</a>
+                <a href="/">Home</a>
+                <a href="/playlists">Playlists</a>
+                <a href="/likedsongs">Liked Songs</a>
+                <a href="/login">Login</a>
             </div>
         </div>
     );

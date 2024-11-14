@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import './Header.css';
 import logo from '../images/spotifyRunnerLogo.png';
 import cardImage from '../images/card1.png';
@@ -32,7 +33,9 @@ const Header = () => {
                 <div className="card" style={{backgroundImage: `url(${cardImage}`}}>
 
                     <h3 className="card-title">DEMO PLAYLISTS</h3>
-                    <button className="preview-button">Preview</button>
+                    <Link to="/DemoPlaylists">
+                    <button className="preview-button" >Preview</button>
+                    </Link>
                 </div>
                 <div className="card" style={{backgroundImage: `url(${cardImage2}`}}>
 
