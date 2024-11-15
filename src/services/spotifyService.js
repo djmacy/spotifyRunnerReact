@@ -11,3 +11,23 @@ export const getTestJson = async () => {
         console.error("Error fetching test JSON:", error);
     }
 };
+
+export const login = () => {
+    window.location.href = `${API_BASE_URL}/spotifyRunner/login`;
+};
+
+export const checkSpotifyLogin = async () => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/spotifyRunner/isSpotifyLoggedIn` , {
+            method: 'GET',
+            credentials: 'include',
+        });
+        if (!response.ok) {
+            throw new Error(`Error: ${response.statusText}`);
+        }
+        const isLoggedIn = await response.json();
+        return isLoggedIn;
+    } catch (error) {
+        console.error("Error checking Spotify login login: " + error);
+    }
+};

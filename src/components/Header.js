@@ -1,5 +1,6 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { login } from "../services/spotifyService";
 import './Header.css';
 import logo from '../images/spotifyRunnerLogo.png';
 import cardImage from '../images/card1.png';
@@ -9,6 +10,12 @@ import cardImage4 from '../images/card4.png';
 import cardImage5 from '../images/card5.png';
 
 const Header = () => {
+   // const navigate = useNavigate();
+
+    const handleLogin = () => {
+        login(); // Initiates redirection
+    };
+
     return (
         <header className="header">
 
@@ -33,9 +40,9 @@ const Header = () => {
                 <div className="card" style={{backgroundImage: `url(${cardImage}`}}>
 
                     <h3 className="card-title">DEMO PLAYLISTS</h3>
-                    <Link to="/DemoPlaylists">
-                    <button className="preview-button" >Preview</button>
-                    </Link>
+
+                    <button className="preview-button" onClick={handleLogin}>Preview</button>
+
                 </div>
                 <div className="card" style={{backgroundImage: `url(${cardImage2}`}}>
 
