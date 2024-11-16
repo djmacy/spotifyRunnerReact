@@ -1,6 +1,6 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { login } from "../services/spotifyService";
+import { login, checkSpotifyLogin } from "../services/spotifyService";
 import './Header.css';
 import logo from '../images/spotifyRunnerLogo.png';
 import cardImage from '../images/card1.png';
@@ -8,17 +8,34 @@ import cardImage2 from '../images/card2.png';
 import cardImage3 from '../images/card3.png';
 import cardImage4 from '../images/card4.png';
 import cardImage5 from '../images/card5.png';
+import Modal from "./Modal";
 
 const Header = () => {
-   // const navigate = useNavigate();
+    const navigate = useNavigate();
 
-    const handleLogin = () => {
-        login(); // Initiates redirection
+    const [isModalOpen, setModalOpen] = useState(false);
+    const handleCloseModal = () => setModalOpen(false);
+
+    const handleLogin = async (url) => {
+        try {
+            const isLoggedIn = await checkSpotifyLogin();
+            if (isLoggedIn) {
+                navigate(url);
+            } else {
+                setModalOpen(true)
+            }
+        } catch (error) {
+            console.error("Error checking Spotify login: " + error);
+        }
     };
+
+    const handleSpotifyLogin = () => {
+        setModalOpen(false);
+        login();
+    }
 
     return (
         <header className="header">
-
             <div className="banner">
                 <div className="hero-container">
                     <h1 className="text-run">RUN</h1>
@@ -34,18 +51,12 @@ const Header = () => {
                     Spotify Runner delivers songs that match your running cadence
                 </p>
             </div>
-
             <div className="card-container">
-
                 <div className="card" style={{backgroundImage: `url(${cardImage}`}}>
-
                     <h3 className="card-title">DEMO PLAYLISTS</h3>
-
-                    <button className="preview-button" onClick={handleLogin}>Preview</button>
-
+                    <button className="preview-button" onClick={() => handleLogin('/DemoPlaylists')}>Preview</button>
                 </div>
                 <div className="card" style={{backgroundImage: `url(${cardImage2}`}}>
-
                     <h3 className="card-title">YOUR PLAYLISTS</h3>
                     <button className="preview-button">Preview</button>
                 </div>
@@ -53,8 +64,12 @@ const Header = () => {
                     <h3 className="card-title">YOUR LIKED SONGS</h3>
                     <button className="preview-button">Preview</button>
                 </div>
-
             </div>
+            <Modal
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                onLogin={handleSpotifyLogin}
+            />
         </header>
     );
 };

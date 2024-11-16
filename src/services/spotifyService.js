@@ -31,3 +31,19 @@ export const checkSpotifyLogin = async () => {
         console.error("Error checking Spotify login login: " + error);
     }
 };
+
+export const getPopPlaylist = async () => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/spotifyRunner/popPlaylist`, {
+            method: 'GET',
+            credentials: 'include',
+        });
+        if (!response.ok) {
+            throw new Error(`Error: ${response.statusText}`);
+        }
+        const popPlaylist = await response.json();
+        return popPlaylist;
+    } catch (error) {
+        console.error(`Error getting pop playlist: ${error}`);
+    }
+}
