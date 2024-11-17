@@ -1,9 +1,11 @@
 import React, {useEffect, useRef, useState} from 'react';
+
 import './DemoPlaylists.css'
-import cardImage from "../../images/card1.png";
-import cardImage2 from "../../images/card2.png";
-import cardImage3 from "../../images/card3.png";
-import { getPopPlaylist } from "../../services/spotifyService";
+import cardImage from "../../images/card5.png";
+import cardImage2 from "../../images/card4.png";
+import cardImage3 from "../../images/card6.png";
+import {getPopPlaylist, getRockPlaylist, getHipHopPlaylist, queuePlaylist} from "../../services/spotifyService";
+import SpriteAnimation from '../SpriteAnimation';
 
 const DemoPlaylists = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -13,6 +15,9 @@ const DemoPlaylists = () => {
     const [rockSongs, setRockSongs] = useState([]);
     const [hipHopSongs, setHipHopSongs] = useState([]);
     const [currentCard, setCurrentCard] = useState(null);
+   // const [uris, setUris] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [response, setResponse] = useState(null);
 
     const cards = [
         {
@@ -25,10 +30,7 @@ const DemoPlaylists = () => {
             id: 2,
             title: "Hip Hop",
             image: cardImage2,
-            songs: [
-                { title: "Track 1", artists: "Artist A", duration: "2:50", coverImage: "coverA.jpg" },
-                { title: "Track 2", artists: "Artist B", duration: "3:15", coverImage: "coverB.jpg" },
-            ],
+            songs: hipHopSongs,
         },
         {
             id: 3,
@@ -89,19 +91,30 @@ const DemoPlaylists = () => {
        }
     }, [isSidebarOpen]);
 
-    const handleQueue = () => {
+    const handleQueue = async () => {
         console.log("Queue button clicked");
-        // Add functionality for queuing the playlist here
+        try {
+            setLoading(true);
+            const uris = songs.map((song) => song.uri);
+            console.log(uris)
+            const result = await queuePlaylist(uris);
+            setResponse(result);
+            console.log(result);
+        } catch (error) {
+            console.log(`Failed to queue songs: ${error.message}`);
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
         const popPlaylist = async () => {
             const songs = await getPopPlaylist();
-            console.log(songs);
             const formattedSongs = songs.tracks.items.map((item) => {
                 const track = item.track;
                 return {
                     id: track.id,
+                    uri: track.uri,
                     title: track.name,
                     artists: track.artists.map((artist) => artist.name).join(', '),
                     duration: formatDuration(track.duration_ms),
@@ -111,6 +124,42 @@ const DemoPlaylists = () => {
             setPopSongs(formattedSongs);
         };
         popPlaylist();
+
+        const rockPlaylist = async () => {
+            const songs = await getRockPlaylist();
+            //console.log(songs);
+            const formattedSongs = songs.tracks.items.map((item) => {
+                const track = item.track;
+                return {
+                    id: track.id,
+                    uri: track.uri,
+                    title: track.name,
+                    artists: track.artists.map((artist) => artist.name).join(', '),
+                    duration: formatDuration(track.duration_ms),
+                    coverImage: track.album.images[0].url,
+                };
+            });
+            setRockSongs(formattedSongs);
+        };
+        rockPlaylist();
+
+        const hipHopPlaylist = async () => {
+            const songs = await getHipHopPlaylist();
+            console.log(songs);
+            const formattedSongs = songs.tracks.items.map((item) => {
+                const track = item.track;
+                return {
+                    id: track.id,
+                    uri: track.uri,
+                    title: track.name,
+                    artists: track.artists.map((artist) => artist.name).join(', '),
+                    duration: formatDuration(track.duration_ms),
+                    coverImage: track.album.images[0].url,
+                };
+            });
+            setHipHopSongs(formattedSongs);
+        };
+        hipHopPlaylist();
     }, [])
 
     const formatDuration = (durationMs) => {
@@ -161,10 +210,16 @@ const DemoPlaylists = () => {
                 </div>
                 {/* Buttons at the bottom */}
                 <div className="sidebar-buttons">
-                    <button className="pill-button" onClick={handleQueue}>Queue</button>
+                    <button className="pill-button" onClick={handleQueue} disabled={loading}> {loading ? "Queuing..." : "Queue"}</button>
                     <button className="pill-button" onClick={() => setIsSidebarOpen(false)}>Close</button>
                 </div>
             </div>
+            {/* Loading overlay with SpriteAnimation */}
+            {loading && (
+                <div className="loading-overlay">
+                    <SpriteAnimation /> {/* Render the SpriteAnimation here */}
+                </div>
+            )}
         </div>
     );
 }

@@ -13,7 +13,10 @@ const Home = () => {
     }, []);
 
     return (
-        <Header/>
+        <div>
+            <Header/>
+        </div>
+
     );
 }
 

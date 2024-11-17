@@ -47,3 +47,77 @@ export const getPopPlaylist = async () => {
         console.error(`Error getting pop playlist: ${error}`);
     }
 }
+
+export const getRockPlaylist = async() => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/spotifyRunner/rockPlaylist`, {
+            method: 'GET',
+            credentials: 'include',
+        });
+        if (!response.ok) {
+            throw new Error(`Error: ${response.statusText}`);
+        }
+        const rockPlaylist = await response.json();
+        return rockPlaylist;
+    } catch(error) {
+        console.error(`Error getting rock playlist: ${error}`);
+    }
+};
+
+export const getHipHopPlaylist = async () => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/spotifyRunner/hipHopPlaylist`, {
+            method: 'GET',
+            credentials: 'include',
+        });
+        if (!response.ok) {
+            throw new Error(`Error: ${response.statusText}`);
+        }
+        const hipHopPlaylist = await response.json();
+        return hipHopPlaylist;
+    } catch(error) {
+        console.error(`Error getting HipHop playlist: ${error}`);
+    }
+}
+
+export const queuePlaylist = async (uris) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/spotifyRunner/queuePlaylist`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(uris),
+            credentials: "include", // Important for sending cookies
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to queue playlist");
+        }
+        return await response.json();
+    } catch (error) {
+        console.error("Error queue playlist: " + error);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
