@@ -58,7 +58,7 @@ const Header = () => {
                 </div>
                 <div className="card" style={{backgroundImage: `url(${cardImage2}`}}>
                     <h3 className="card-title">YOUR PLAYLISTS</h3>
-                    <button className="preview-button">Preview</button>
+                    <button className="preview-button" onClick={() => handleLogin('/playlists')}>Preview</button>
                 </div>
                 <div className="card" style={{backgroundImage: `url(${cardImage3}`}}>
                     <h3 className="card-title">YOUR LIKED SONGS</h3>

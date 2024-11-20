@@ -1,0 +1,67 @@
+.playlists-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+   /* height: 100vh;*/
+    padding: 2rem;
+  /*  background-color: #f5f5f5;*/
+}
+
+
+
+.bpm-title {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #41a386;
+    margin-top: 10rem;
+}
+
+.slider-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.slider {
+    width: 300px;
+    margin: 1rem 0;
+}
+
+.bpm-value {
+    font-size: 1.2rem;
+    color: #41a386; /* Matches your sidebar green */
+    font-weight: bold;
+}
+
+.playlists-page {
+    padding: 2rem;
+    background-color: #41a386;
+    border-radius: 1rem;
+    width: 80%; /* Ensure it stretches within its parent container */
+   /* max-width: 1200px; /* Matches the grid's max-width for consistency */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centers all child content */
+    justify-content: center;
+    margin: 1rem auto; /* Center the entire playlists-page block */
+    /*border: 1px dashed blue;*/
+}
+
+.playlists-title {
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 2rem;
+}
+
+.playlists-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center; /* Aligns cards to the left */
+    gap: 1.5rem; /* Adds consistent spacing between cards */
+    width: 100%;
+    max-width: 1200px;
+    position: relative; /* Ensures cards remain inside the container */
+    padding: 0 1.5rem; /* Add padding to help with alignment */
+}

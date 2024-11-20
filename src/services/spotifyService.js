@@ -32,6 +32,22 @@ export const checkSpotifyLogin = async () => {
     }
 };
 
+export const getUserPlaylist = async () => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/spotifyRunner/playlists`, {
+            method: 'GET',
+            credentials: "include"
+        })
+        if (!response.ok) {
+            throw new Error(`Error: ${response.statusText}`);
+        }
+        const playlistResponse = await response.json();
+        return playlistResponse;
+    } catch (error) {
+        console.error("Error getting user playlist: " + error);
+    }
+};
+
 export const getPopPlaylist = async () => {
     try {
         const response = await fetch(`${API_BASE_URL}/spotifyRunner/popPlaylist`, {

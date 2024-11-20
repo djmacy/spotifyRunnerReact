@@ -4,10 +4,19 @@ import './DemoPlaylists.css'
 import cardImage from "../../images/card5.png";
 import cardImage2 from "../../images/card4.png";
 import cardImage3 from "../../images/card6.png";
-import {getPopPlaylist, getRockPlaylist, getHipHopPlaylist, queuePlaylist} from "../../services/spotifyService";
+import {
+    getPopPlaylist,
+    getRockPlaylist,
+    getHipHopPlaylist,
+    queuePlaylist,
+    checkSpotifyLogin
+} from "../../services/spotifyService";
 import SpriteAnimation from '../SpriteAnimation';
+import {useNavigate} from "react-router-dom";
 
 const DemoPlaylists = () => {
+    const navigate = useNavigate();
+
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const sidebarRef = useRef(null);
     const [songs, setSongs] = useState([]);
@@ -16,6 +25,7 @@ const DemoPlaylists = () => {
     const [hipHopSongs, setHipHopSongs] = useState([]);
     const [currentCard, setCurrentCard] = useState(null);
    // const [uris, setUris] = useState([]);
+    const [loggedIn, setLoggedIn] = useState(false);
     const [loading, setLoading] = useState(false);
     const [response, setResponse] = useState(null);
 
@@ -93,6 +103,15 @@ const DemoPlaylists = () => {
 
     const handleQueue = async () => {
         console.log("Queue button clicked");
+
+        // const isLoggedIn = async () => {
+        //     const loggedIn = await checkSpotifyLogin();
+        //     setLoggedIn(loggedIn);
+        // }
+        // isLoggedIn();
+        // if (!loggedIn) {
+        //     navigate('/');
+        // }
         try {
             setLoading(true);
             const uris = songs.map((song) => song.uri);
@@ -108,6 +127,17 @@ const DemoPlaylists = () => {
     };
 
     useEffect(() => {
+        // const isLoggedIn = async () => {
+        //     const loggedIn = await checkSpotifyLogin();
+        //     setLoggedIn(loggedIn);
+        // }
+        // isLoggedIn();
+        // console.log(loggedIn);
+        // if (!loggedIn) {
+        //     navigate('/');
+        //     return;
+        // }
+
         const popPlaylist = async () => {
             const songs = await getPopPlaylist();
             const formattedSongs = songs.tracks.items.map((item) => {
@@ -192,32 +222,38 @@ const DemoPlaylists = () => {
             </div>
 
             <div ref={sidebarRef} className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
-                <h2 style={{color: '#fff'}}>Playlist Preview</h2>
-                <p style={{color: '#e0e0e0'}}>Songs in this playlist:</p>
+                <div className="sidebar-content-wrapper">
+                    <h2 style={{color: '#fff'}}>Playlist Preview</h2>
+                    <p style={{color: '#e0e0e0'}}>Songs in this playlist:</p>
 
-                {/* Render each song */}
-                <div className="song-list">
-                    {songs.map((song, index) => (
-                        <div key={index} className="song-item">
-                            <img src={song.coverImage} alt={song.title} className="song-image"/>
-                            <div className="song-details">
-                                <p className="song-title">{song.title}</p>
-                                <p className="song-artist">{song.artists}</p>
+                    {/* Scrollable song list */}
+                    <div className="song-list">
+                        {songs.map((song, index) => (
+                            <div key={index} className="song-item">
+                                <img src={song.coverImage} alt={song.title} className="song-image"/>
+                                <div className="song-details">
+                                    <p className="song-title">{song.title}</p>
+                                    <p className="song-artist">{song.artists}</p>
+                                </div>
+                                <p className="song-duration">{song.duration}</p>
                             </div>
-                            <p className="song-duration">{song.duration}</p>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
-                {/* Buttons at the bottom */}
+
+                {/* Buttons outside the scrollable area */}
                 <div className="sidebar-buttons">
-                    <button className="pill-button" onClick={handleQueue} disabled={loading}> {loading ? "Queuing..." : "Queue"}</button>
+                    <button className="pill-button" onClick={handleQueue} disabled={loading}>
+                        {loading ? 'Queuing...' : 'Queue'}
+                    </button>
                     <button className="pill-button" onClick={() => setIsSidebarOpen(false)}>Close</button>
                 </div>
             </div>
+
             {/* Loading overlay with SpriteAnimation */}
             {loading && (
                 <div className="loading-overlay">
-                    <SpriteAnimation /> {/* Render the SpriteAnimation here */}
+                    <SpriteAnimation/> {/* Render the SpriteAnimation here */}
                 </div>
             )}
         </div>
