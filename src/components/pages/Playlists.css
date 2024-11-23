@@ -120,3 +120,17 @@
     position: relative; /* Ensures cards remain inside the container */
     padding: 0 1.5rem; /* Add padding to help with alignment */
 }
+
+/* Styles for the disabled state */
+.pill-button:disabled {
+    background-color: #a5a5a5; /* Gray color for disabled buttons */
+    color: #dcdcdc; /* Light gray text */
+    cursor: not-allowed; /* Indicate the button is not clickable */
+    opacity: 0.7; /* Slight transparency for distinction */
+}
+
+/* Remove hover effects when disabled */
+.pill-button:disabled:hover {
+    background-color: #a5a5a5; /* Retain the disabled background */
+    color: #dcdcdc; /* Keep text color consistent */
+}

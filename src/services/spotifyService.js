@@ -1,3 +1,5 @@
+import playlists from "../components/pages/Playlists";
+
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 export const getTestJson = async () => {
@@ -117,7 +119,32 @@ export const queuePlaylist = async (uris) => {
     }
 }
 
+export const getSongsFromPlaylists = async (playlists, lowerBound, upperBound) => {
+    try {
+        const body = {
+            playlists,
+            lowerBound,
+            upperBound
+        };
 
+        const response = await fetch(`${API_BASE_URL}/spotifyRunner/getFilteredSongs`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+            credentials: "include", // Important for sending cookies
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to get songs from playlist");
+        }
+        return await response.json();
+    } catch (error) {
+        console.error("Error grabbing songs from playlist: " + error);
+    }
+}
 
 
 
