@@ -3,6 +3,9 @@ import './Playlists.css';
 import PlaylistCard from "../PlaylistCard";
 import {getUserPlaylist, getSongsFromPlaylists, queuePlaylist} from "../../services/spotifyService";
 import SpriteAnimation from "../SpriteAnimation";
+import Skeleton from "../Skeleton";
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+
 
 const Playlists = () => {
     const [minBpm, setMinBpm] = useState(165);
@@ -14,18 +17,70 @@ const Playlists = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const sidebarRef = useRef(null);
     const [loading, setLoading] = useState(false);
+    const [loadingPlaylists, setLoadingPlaylists] = useState(false);
+    const [totalTracksSelected, setTotalTracksSelected] = useState(0);
 
 
     useEffect(() => {
-        const fetchPlaylists = async() => {
-            const data = await getUserPlaylist();
-            if (data) {
-                const sortedPlaylists = data.sort((a, b) => a.name.localeCompare(b.name));
-                setPlaylists(sortedPlaylists);
+        const fetchPlaylists = async () => {
+            try {
+                setLoadingPlaylists(true); // Set loading to true before fetching
+
+                const data = await getUserPlaylist();
+                if (data) {
+                    const sortedPlaylists = data.sort((a, b) => a.name.localeCompare(b.name));
+                    setPlaylists(sortedPlaylists);
+                }
+            } catch (error) {
+                console.error("Error fetching playlists:", error);
+            } finally {
+                setLoadingPlaylists(false); // Ensure this is only set after fetch completes
             }
         };
+
         fetchPlaylists();
+        console.log(playlists)
     }, []);
+
+    useEffect(() => {
+        if (loading) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+    }, [loading]);
+
+    const formatDuration = (durationMs) => {
+        const minutes = Math.floor(durationMs / 60000);
+        const seconds = ((durationMs % 60000) / 1000).toFixed(0);
+        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    }
+
+    const getArtists = (artists) => {
+        return artists.map(artist => artist.name).join(', ');
+    };
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            //console.log('Clicked outside:', event.target);
+            //Close the sidebar if preview is clicked again for same button
+            if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+                setIsSidebarOpen(false);
+            }
+        };
+
+        if (isSidebarOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+            document.body.style.overflow = 'hidden';
+        }
+        else {
+            document.body.style.overflow = '';
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        }
+    }, [isSidebarOpen]);
 
     const filteredPlaylists = playlists.filter((playlist) => playlist.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
@@ -38,6 +93,8 @@ const Playlists = () => {
             const upperBound = parseInt(minBpm) + 10; // Example upper bound for tempo
 
             try {
+                setIsSidebarOpen(false);
+                setLoading(true);
                 console.log('Finding songs with playlists:', selectedCards);
                 const filteredSongs = await getSongsFromPlaylists(selectedCards, lowerBound, upperBound);
                 console.log('Songs with playlists:', songs);
@@ -54,6 +111,8 @@ const Playlists = () => {
             } catch (err) {
                 console.error('Error fetching songs:', err);
                 setError(err.message); // Update error state
+            } finally {
+                setLoading(false);
             }
         } else {
             console.log('No playlists selected');
@@ -64,14 +123,23 @@ const Playlists = () => {
         setMinBpm(parseInt(event.target.value, 10));
     };
 
-    const handleSelect = (id) => {
-        console.log(id);
-        setSelectedCards((prevSelected) =>
-            prevSelected.includes(id)
-                ? prevSelected.filter((cardId) => cardId !== id)
-                : [...prevSelected, id]
-        );
+    const handleSelect = (id, totalTracks) => {
+        console.log(id + " " + totalTracks);
+
+        setSelectedCards((prevSelected) => {
+            if (prevSelected.includes(id)) {
+                // Deselect the card: Remove tracks from the total
+                setTotalTracksSelected((prevTotal) => prevTotal - totalTracks);
+                return prevSelected.filter((cardId) => cardId !== id);
+            } else {
+                // Select the card: Add tracks to the total
+                setTotalTracksSelected((prevTotal) => prevTotal + totalTracks);
+                return [...prevSelected, id];
+            }
+        });
+        console.log(totalTracksSelected)
     };
+
 
     const handleSelectAll = () => {
         // Check if all playlists are already selected
@@ -82,9 +150,17 @@ const Playlists = () => {
         if (allSelected) {
             // If all are selected, clear the selection
             setSelectedCards([]);
+            setTotalTracksSelected(0);
         } else {
             // Otherwise, select all
-            setSelectedCards(playlists.map((playlist) => playlist.id));
+            const allPlaylistIds = playlists.map((playlist) => playlist.id);
+            const totalTracks = playlists.reduce(
+                (total, playlist) => total + (playlist.tracks?.total || 0),
+                0
+            );
+
+            setSelectedCards(allPlaylistIds);
+            setTotalTracksSelected(totalTracks); // Update total tracks
         }
     };
 
@@ -93,7 +169,7 @@ const Playlists = () => {
 
         try {
             setLoading(true);
-            const uris = songs.map((song) => song.uri);
+            const uris = songs.map((song) => song.audioFeature.uri);
             console.log(uris)
             const result = await queuePlaylist(uris);
             //setResponse(result);
@@ -102,7 +178,23 @@ const Playlists = () => {
             console.log(`Failed to queue songs: ${error.message}`);
         } finally {
             setLoading(false);
+            setIsSidebarOpen(false);
         }
+    };
+
+    const handleRemoveSong = (indexToRemove) => {
+        setSongs((prevSongs) => prevSongs.filter((_, index) => index !== indexToRemove));
+    };
+
+    const handleDragEnd = (result) => {
+        if (!result.destination) return; // If dropped outside the list, do nothing
+
+        const updatedSongs = Array.from(songs);
+        const [reorderedSong] = updatedSongs.splice(result.source.index, 1);
+        updatedSongs.splice(result.destination.index, 0, reorderedSong);
+
+        setSongs(updatedSongs);
+        console.log(songs);
     };
 
     return (
@@ -143,40 +235,75 @@ const Playlists = () => {
                                 disabled={selectedCards.length === 0}>
                             Find Songs
                         </button>
+                        <p>
+                            Approximate time: {totalTracksSelected/100 + ' '} Seconds
+                        </p>
                     </div>
                 </div>
                 <div className="playlists-grid">
-                    {filteredPlaylists.map((playlist) => (
-                        <PlaylistCard
-                            key={playlist.id}
-                            id={playlist.id}
-                            name={playlist.name}
-                            image={playlist.images[0]?.url || ''}
-                            isSelected={selectedCards.includes(playlist.id)}
-                            onSelect={handleSelect}
-                        />
-                    ))}
+                    {loadingPlaylists ? (
+                        // Show skeletons while loading
+                        Array.from({length: 10}).map((_, index) => (
+                            <Skeleton key={index}/>
+                        ))
+                    ) : (
+                        // Show actual playlist cards once the data is loaded
+                        filteredPlaylists.map((playlist) => (
+                            <PlaylistCard
+                                key={playlist.id}
+                                id={playlist.id}
+                                name={playlist.name}
+                                image={playlist.images[0]?.url || ''}
+                                totalTracks={parseInt(playlist.tracks?.total) || 0}
+                                isSelected={selectedCards.includes(playlist.id)}
+                                onSelect={(id) => handleSelect(id, parseInt(playlist.tracks?.total) || 0)} // Pass totalTracks to handleSelect
+                            />
+                        ))
+                    )}
                 </div>
             </div>
 
             <div ref={sidebarRef} className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
                 <div className="sidebar-content-wrapper">
-                    <h2 style={{color: '#fff'}}>Filtered Songs</h2>
-                    <p style={{color: '#e0e0e0'}}>{songs.length === 0 ? ('No songs found matching your criteria') : (songs.length + ' Songs Found:')}</p>
+                    <h2 style={{color: '#fff', textAlign: 'center'}}>Filtered Songs</h2>
+                    <p style={{
+                        color: '#e0e0e0',
+                        textAlign: 'center'
+                    }}>{songs.length === 0 ? ('No songs found matching your criteria') : (songs.length + ' Songs Found:')}</p>
 
-                    {/* Scrollable song list */}
-                    <div className="song-list">
-                        {songs.map((song, index) => (
-                            <div key={index} className="song-item">
-                                <img src={song.coverImage} alt={song.title} className="song-image"/>
-                                <div className="song-details">
-                                    <p className="song-title">{song.title}</p>
-                                    <p className="song-artist">{song.artists}</p>
+                    <DragDropContext onDragEnd={handleDragEnd}>
+                        <Droppable droppableId="song-list">
+                            {(provided) => (
+                                <div
+                                    className="song-list"
+                                    {...provided.droppableProps}
+                                    ref={provided.innerRef}
+                                >
+                                    {songs.map((song, index) => (
+                                        <Draggable key={song.id || index} draggableId={song.id || `song-${index}`} index={index}>
+                                            {(provided) => (
+                                                <div
+                                                    className="song-item"
+                                                    ref={provided.innerRef}
+                                                    {...provided.draggableProps}
+                                                    {...provided.dragHandleProps}
+                                                >
+                                                    <img src={song.metadata.album?.images[0]?.url} alt={song.metadata.name} className="song-image"/>
+                                                    <div className="song-details">
+                                                        <p className="song-title">{song.metadata.name}</p>
+                                                        <p className="song-artist">{getArtists(song.metadata.artists)}</p>
+                                                    </div>
+                                                    <p className="song-duration">{formatDuration(song.metadata.duration_ms)}</p>
+                                                    <button onClick={() => handleRemoveSong(index)} className="remove-song-btn">X</button>
+                                                </div>
+                                            )}
+                                        </Draggable>
+                                    ))}
+                                    {provided.placeholder}
                                 </div>
-                                <p className="song-duration">{song.duration}</p>
-                            </div>
-                        ))}
-                    </div>
+                            )}
+                        </Droppable>
+                    </DragDropContext>
                 </div>
 
                 {/* Buttons outside the scrollable area */}

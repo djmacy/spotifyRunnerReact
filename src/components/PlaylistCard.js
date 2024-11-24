@@ -1,7 +1,7 @@
 import React from 'react';
 import './PlaylistCard.css';
 
-const PlaylistCard = ({ id, name, image, isSelected, onSelect }) => {
+const PlaylistCard = ({ id, name, image, totalTracks, isSelected, onSelect }) => {
     return (
         <div
             className={`playlist-card ${isSelected ? 'selected' : ''}`}
