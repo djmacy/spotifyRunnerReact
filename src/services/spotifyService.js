@@ -50,6 +50,22 @@ export const getUserPlaylist = async () => {
     }
 };
 
+export const getLikedSongs = async () => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/spotifyRunner/mylikedsongs`, {
+            method: 'GET',
+            credentials: 'include'
+        })
+        if (!response.ok) {
+            throw new Error(`Error: ${response.statusText}`);
+        }
+        const getLikedSongsResponse = await response.json();
+        return getLikedSongsResponse;
+    } catch (error) {
+        console.error("Error getting liked songs: " + error);
+    }
+};
+
 export const getPopPlaylist = async () => {
     try {
         const response = await fetch(`${API_BASE_URL}/spotifyRunner/popPlaylist`, {
@@ -142,7 +158,34 @@ export const getSongsFromPlaylists = async (playlists, lowerBound, upperBound) =
         }
         return await response.json();
     } catch (error) {
-        console.error("Error grabbing songs from playlist: " + error);
+        console.error(`Error grabbing songs from playlist: ${error}`);
+    }
+}
+
+export const getFilteredLikedSongs = async (songIds, lowerBound, upperBound) => {
+    try {
+        const body = {
+            songIds,
+            lowerBound,
+            upperBound
+        };
+        const response = await fetch(`${API_BASE_URL}/spotifyRunner/getFilteredLikedSongs`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+            credentials: "include", // Important for sending cookies
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to get songs from playlist");
+        }
+        return await response.json();
+
+    } catch(error) {
+        throw new Error(`Error getting filtered songs: ${error}`);
     }
 }
 
