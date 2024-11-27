@@ -1,15 +1,17 @@
 import React, {useEffect, useRef, useState} from 'react';
 import './Playlists.css';
 import PlaylistCard from "../PlaylistCard";
-import {getUserPlaylist, getSongsFromPlaylists, queuePlaylist} from "../../services/spotifyService";
+import {getUserPlaylist, getSongsFromPlaylists, queuePlaylist, getDevices} from "../../services/spotifyService";
 import SpriteAnimation from "../SpriteAnimation";
 import Skeleton from "../Skeleton";
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import ModalDevices from "../ModalDevices";
 
 
 const Playlists = () => {
     const [minBpm, setMinBpm] = useState(165);
     const [playlists, setPlaylists] = useState([]);
+    const [devices, setDevices] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCards, setSelectedCards] = useState([]);
     const [songs, setSongs] = useState([]);
@@ -19,6 +21,8 @@ const Playlists = () => {
     const [loading, setLoading] = useState(false);
     const [loadingPlaylists, setLoadingPlaylists] = useState(false);
     const [totalTracksSelected, setTotalTracksSelected] = useState(0);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [canQueue, setCanQueue] = useState(false);
 
 
     useEffect(() => {
@@ -37,10 +41,38 @@ const Playlists = () => {
                 setLoadingPlaylists(false); // Ensure this is only set after fetch completes
             }
         };
-
         fetchPlaylists();
-        console.log(playlists)
+       // console.log(playlists)
+        fetchDevices();
+        //console.log(devices);
+
     }, []);
+
+    // Standalone fetchDevices function
+    const fetchDevices = async () => {
+        try {
+            const playableDevices = await getDevices();
+            setDevices(playableDevices);
+
+            // Show modal if no devices are found
+            if (!playableDevices || playableDevices.devices?.length === 0) {
+                setCanQueue(false);
+                setIsModalOpen(true);
+            } else {
+                setIsModalOpen(false); // Close modal if devices are found
+                setCanQueue(true);
+            }
+        } catch (error) {
+            console.error("Error fetching devices: ", error);
+            setIsModalOpen(true); // Optionally open modal on error
+            setCanQueue(false);
+        }
+    };
+
+    // useEffect(() => {
+    //
+    //     console.log(devices); // This will log when `devices` changes
+    // }, [devices]);
 
     useEffect(() => {
         if (loading) {
@@ -95,6 +127,12 @@ const Playlists = () => {
             try {
                 setIsSidebarOpen(false);
                 setLoading(true);
+                fetchDevices();
+                console.log(canQueue);
+                if (!canQueue) {
+                    setLoading(false);
+                    return;
+                }
                 console.log('Finding songs with playlists:', selectedCards);
                 const filteredSongs = await getSongsFromPlaylists(selectedCards, lowerBound, upperBound);
                 console.log('Songs with playlists:', songs);
@@ -113,6 +151,7 @@ const Playlists = () => {
                 setError(err.message); // Update error state
             } finally {
                 setLoading(false);
+
             }
         } else {
             console.log('No playlists selected');
@@ -168,10 +207,21 @@ const Playlists = () => {
         console.log("Queue button clicked");
 
         try {
+            fetchDevices();
+            if (!canQueue) {
+                return;
+            }
             setLoading(true);
             const uris = songs.map((song) => song.audioFeature.uri);
+            const deviceId = devices.devices[0]?.id;
+
+            if (!deviceId) {
+                console.error("No device ID found");
+                return; // Handle the case where deviceId is not available
+            }
+            console.log('DM: ' + deviceId)
             console.log(uris)
-            const result = await queuePlaylist(uris);
+            const result = await queuePlaylist(uris, deviceId);
             //setResponse(result);
             console.log(result);
         } catch (error) {
@@ -321,6 +371,7 @@ const Playlists = () => {
                     <SpriteAnimation/> {/* Render the SpriteAnimation here */}
                 </div>
             )}
+            <ModalDevices isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
         </div>
     );
 };

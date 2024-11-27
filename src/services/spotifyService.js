@@ -14,6 +14,23 @@ export const getTestJson = async () => {
     }
 };
 
+export const getDevices = async () => {
+  try {
+      const response = await fetch(`${API_BASE_URL}/spotifyRunner/getDevices`, {
+          method: 'GET',
+          credentials: 'include'
+      });
+      if (!response.ok) {
+          const errorMessage = await response.text();
+          throw new Error(`Failed to fetch devices: ${errorMessage}`);
+      }
+      return await response.json();
+  }  catch (error) {
+      console.error("Error fetching devices", error);
+      return null; // Return null in case of error
+  }
+};
+
 export const login = () => {
     window.location.href = `${API_BASE_URL}/spotifyRunner/login`;
 };
@@ -31,6 +48,22 @@ export const checkSpotifyLogin = async () => {
         return isLoggedIn;
     } catch (error) {
         console.error("Error checking Spotify login login: " + error);
+    }
+};
+
+export const isPremium = async () => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/spotifyRunner/isPremium`, {
+            method: 'GET',
+            credentials: 'include',
+        });
+        if (!response.ok) {
+            throw new Error(`Error: ${response.statusText}`);
+        }
+        const { product } = await response.json(); // Destructure 'product' from JSON response
+        return product === 'premium'; // Return true if the user is premium
+    } catch (error) {
+        console.error("Error checking to see if user has premium: " + error);
     }
 };
 
@@ -114,14 +147,14 @@ export const getHipHopPlaylist = async () => {
     }
 }
 
-export const queuePlaylist = async (uris) => {
+export const queuePlaylist = async (uris, deviceId) => {
     try {
         const response = await fetch(`${API_BASE_URL}/spotifyRunner/queuePlaylist`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(uris),
+            body: JSON.stringify({uris, deviceId}),
             credentials: "include", // Important for sending cookies
         });
 

@@ -1,47 +1,39 @@
 import React, { useEffect, useState } from 'react';
-import { getTestJson } from './services/spotifyService';
-import Home from './components/pages/Home';
+import { BrowserRouter as Router } from 'react-router-dom';
 import Navbar from "./components/Navbar";
 import RoutesComponent from "./Routes";
+import {checkSpotifyLogin, isPremium} from './services/spotifyService';
 
 function App() {
-    const [data, setData] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isPremiumUser, setIsPremiumUser] = useState(false);
 
-    // useEffect(() => {
-    //     // Wrap the fetch call in an async function
-    //     const fetchData = async () => {
-    //         try {
-    //             console.log("Fetching data from /spotifyRunner/testjson...");
-    //             const result = await getTestJson();
-    //
-    //             if (result) {
-    //                 setData(result);
-    //                 console.log("Data fetched successfully:", result);
-    //             } else {
-    //                 console.log("No data returned from the endpoint.");
-    //             }
-    //         } catch (err) {
-    //             console.error("Error fetching data:", err);
-    //             setError(err.message);
-    //         } finally {
-    //             setLoading(false); // Set loading to false once the request completes
-    //         }
-    //     };
-    //
-    //     fetchData();
-    // }, []);
-    //
-    // if (loading) return <h1>Loading...</h1>;
-    // if (error) return <h1>Error: {error}</h1>;
+    useEffect(() => {
+        const fetchAuthAndPremiumStatus = async () => {
+            try {
+                // Check if the user is logged in
+                const loginStatus = await checkSpotifyLogin();
+                setIsAuthenticated(loginStatus);
+
+                if (loginStatus) {
+                    // If logged in, check if the user has premium
+                    const premiumStatus = await isPremium();
+                    setIsPremiumUser(premiumStatus); // Ensure safe handling of premiumStatus
+                    console.log("Premium Status: " + premiumStatus)
+                }
+            } catch (error) {
+                console.error('Error fetching authentication or premium status:', error);
+            }
+        };
+
+        fetchAuthAndPremiumStatus();
+    }, []);
 
     return (
-        <div>
-            <Navbar/>
-            <RoutesComponent/>
-        </div>
-
+        <Router>
+            <Navbar isAuthenticated={isAuthenticated} isPremium={isPremiumUser} />
+            <RoutesComponent isAuthenticated={isAuthenticated} isPremium={isPremiumUser} />
+        </Router>
     );
 }
 

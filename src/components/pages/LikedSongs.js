@@ -1,21 +1,25 @@
 import React, {useState, useEffect, useRef} from 'react';
 import './LikedSongs.css'
 import {DragDropContext, Draggable, Droppable} from "react-beautiful-dnd";
-import {getFilteredLikedSongs, getLikedSongs, queuePlaylist} from "../../services/spotifyService";
+import {getDevices, getFilteredLikedSongs, getLikedSongs, queuePlaylist} from "../../services/spotifyService";
 import SpriteAnimation from "../SpriteAnimation";
 import SongSkeleton from "../SongSkeleton";
+import ModalDevices from "../ModalDevices";
 
 const LikedSongs = () => {
     const [minBpm, setMinBpm] = useState(165);
     const [songs, setSongs] = useState([]);
+    const [devices, setDevices] = useState([]);
     const [filteredSongs, setFilteredSongs] = useState([]);
     const [isFiltered, setIsFiltered] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [canQueue, setCanQueue] = useState(false);
     const [canFilter, setCanFilter] = useState(true);
     const [loadingLikedSongs, setLoadingLikedSongs] = useState(false);
     // State to manage the "still loading" message
     const [stillLoading, setStillLoading] = useState(false);
     const loadingRef = useRef(false); // Declare the ref at the top level
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
 
     useEffect(() => {
@@ -56,9 +60,30 @@ const LikedSongs = () => {
                 setStillLoading(false); // Reset the still loading flag
             }
         };
-
+        fetchDevices();
         fetchSongs();
     }, []);
+
+    // Standalone fetchDevices function
+    const fetchDevices = async () => {
+        try {
+            const playableDevices = await getDevices();
+            setDevices(playableDevices);
+
+            // Show modal if no devices are found
+            if (!playableDevices || playableDevices.devices?.length === 0) {
+                setCanQueue(false);
+                setIsModalOpen(true);
+            } else {
+                setIsModalOpen(false); // Close modal if devices are found
+                setCanQueue(true);
+            }
+        } catch (error) {
+            console.error("Error fetching devices: ", error);
+            setIsModalOpen(true); // Optionally open modal on error
+            setCanQueue(false);
+        }
+    };
 
 
 
@@ -101,6 +126,7 @@ const LikedSongs = () => {
 
             //console.log(mergedSongs);
             setFilteredSongs(mergedSongs);
+            fetchDevices();
         } catch (error) {
            // console.error('Filter failed:', error);
         } finally {
@@ -113,10 +139,21 @@ const LikedSongs = () => {
 
     const queueSongs = async () => {
         try {
+
+            fetchDevices();
+            if (!canQueue) {
+                return;
+            }
             setIsLoading(true);
             const uris = filteredSongs.map((song) => song.uri);
+            const deviceId = devices.devices[0]?.id;
+
+            if (!deviceId) {
+                console.error("No device ID found");
+                return; // Handle the case where deviceId is not available
+            }
             //console.log(uris)
-            const result = await queuePlaylist(uris);
+            const result = await queuePlaylist(uris, deviceId);
             //setResponse(result);
             console.log(result);
         } catch (error) {
@@ -269,6 +306,7 @@ const LikedSongs = () => {
                     <SpriteAnimation/> {/* Render the SpriteAnimation here */}
                 </div>
             )}
+            <ModalDevices isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
         </div>
     );
 };

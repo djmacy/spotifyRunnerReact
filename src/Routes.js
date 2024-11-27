@@ -1,21 +1,41 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Home from './components/pages/Home';
 import DemoPlaylists from "./components/pages/DemoPlaylists";
 import Playlists from "./components/pages/Playlists";
 import LikedSongs from "./components/pages/LikedSongs";
+import ProtectedRoute from './ProtectedRoute';
 
-const RoutesComponent = () => {
+const RoutesComponent = ({ isAuthenticated, isPremium }) => {
     return (
-        <Router>
-            <Routes>
-                <Route path="/" element={<Home/>}></Route>
-                <Route path="/DemoPlaylists" element={<DemoPlaylists/>}></Route>
-                <Route path='Playlists' element={<Playlists/>}></Route>
-                <Route path={'/LikedSongs'} element={<LikedSongs/>}></Route>
-            </Routes>
-        </Router>
-    )
-}
+        <Routes>
+            <Route path="/" element={<Home />} />
+            <Route
+                path="/DemoPlaylists"
+                element={
+                    <ProtectedRoute isAuthenticated={isAuthenticated} isPremium={isPremium}>
+                        <DemoPlaylists />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/Playlists"
+                element={
+                    <ProtectedRoute isAuthenticated={isAuthenticated} isPremium={isPremium}>
+                        <Playlists />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/LikedSongs"
+                element={
+                    <ProtectedRoute isAuthenticated={isAuthenticated} isPremium={isPremium}>
+                        <LikedSongs />
+                    </ProtectedRoute>
+                }
+            />
+        </Routes>
+    );
+};
 
 export default RoutesComponent;
