@@ -5,6 +5,7 @@ import {getDevices, getFilteredLikedSongs, getLikedSongs, queuePlaylist} from ".
 import SpriteAnimation from "../SpriteAnimation";
 import SongSkeleton from "../SongSkeleton";
 import ModalDevices from "../ModalDevices";
+import ModalQueue from "../ModalQueue";
 
 const LikedSongs = () => {
     const [minBpm, setMinBpm] = useState(165);
@@ -20,6 +21,8 @@ const LikedSongs = () => {
     const [stillLoading, setStillLoading] = useState(false);
     const loadingRef = useRef(false); // Declare the ref at the top level
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isModalQueueOpen, setIsModalQueueOpen] = useState(false);
+    const [queueResponse, setQueueResponse] = useState(null);
 
 
     useEffect(() => {
@@ -139,7 +142,6 @@ const LikedSongs = () => {
 
     const queueSongs = async () => {
         try {
-
             fetchDevices();
             if (!canQueue) {
                 return;
@@ -154,12 +156,16 @@ const LikedSongs = () => {
             }
             //console.log(uris)
             const result = await queuePlaylist(uris, deviceId);
+            setQueueResponse(result);
             //setResponse(result);
             console.log(result);
         } catch (error) {
             console.log(`Failed to queue songs: ${error.message}`);
         } finally {
             setIsLoading(false);
+            if (canQueue) {
+                setIsModalQueueOpen(true); // Ensure the modal opens in case of an error
+            }
         }
     };
 
@@ -207,6 +213,7 @@ const LikedSongs = () => {
             </div>
 
             <div className="liked-songs-page">
+                <img src="/full-logo-framed.svg" style={{marginBottom: "-280px"}} alt="Spotify Logo"/>
                 <h1 className="liked-title">Your Liked Songs</h1>
 
                 <div className="my-liked-songs-actions">
@@ -307,6 +314,11 @@ const LikedSongs = () => {
                 </div>
             )}
             <ModalDevices isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+            <ModalQueue
+                isOpen={isModalQueueOpen && !isModalOpen}
+                onClose={() => setIsModalQueueOpen(false)}
+                totalQueued={queueResponse?.totalQueued} // Pass the totalQueued value from the result
+            />
         </div>
     );
 };

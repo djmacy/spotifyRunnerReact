@@ -48,7 +48,7 @@ const Header = () => {
                 <h2 className="feature-title">Features</h2>
                 <p className="feature-subtext">
                     Whether you're looking for motivation or just want to keep the beat,
-                    Spotify Runner delivers songs that match your running cadence
+                    Rythem Runner delivers songs that match your running cadence
                 </p>
             </div>
             <div className="card-container">

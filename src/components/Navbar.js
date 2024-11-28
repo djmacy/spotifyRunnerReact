@@ -27,7 +27,7 @@ const Navbar = ({ isAuthenticated }) => {
                     <img src={logo} alt="Logo" />
                 </div>
                 <div className="spotify-text">
-                    <span>Spotify</span>
+                    <span>Rythem</span>
                     <span>Runner</span>
                 </div>
             </div>

@@ -9,10 +9,12 @@ import {
     getRockPlaylist,
     getHipHopPlaylist,
     queuePlaylist,
-    checkSpotifyLogin
+    checkSpotifyLogin, getDevices, getUserPlaylist
 } from "../../services/spotifyService";
 import SpriteAnimation from '../SpriteAnimation';
 import {useNavigate} from "react-router-dom";
+import ModalDevices from "../ModalDevices";
+import ModalQueue from "../ModalQueue";
 
 const DemoPlaylists = () => {
     const navigate = useNavigate();
@@ -25,9 +27,13 @@ const DemoPlaylists = () => {
     const [hipHopSongs, setHipHopSongs] = useState([]);
     const [currentCard, setCurrentCard] = useState(null);
    // const [uris, setUris] = useState([]);
-    const [loggedIn, setLoggedIn] = useState(false);
     const [loading, setLoading] = useState(false);
     const [response, setResponse] = useState(null);
+    const [devices, setDevices] = useState([]);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [canQueue, setCanQueue] = useState(false);
+    const [isModalQueueOpen, setIsModalQueueOpen] = useState(false);
+
 
     const cards = [
         {
@@ -49,6 +55,31 @@ const DemoPlaylists = () => {
             songs: rockSongs,
         },
     ];
+    useEffect(() => {
+        fetchDevices();
+        console.log(devices);
+        console.log(isModalOpen);
+    }, []);
+
+    const fetchDevices = async () => {
+        try {
+            const playableDevices = await getDevices();
+            console.log(playableDevices); // Log the fetched devices
+            setDevices(playableDevices);
+
+            if (!playableDevices || playableDevices.devices?.length === 0) {
+                setCanQueue(false);
+                setIsModalOpen(true);
+            } else {
+                setIsModalOpen(false);
+                setCanQueue(true);
+            }
+        } catch (error) {
+            console.error("Error fetching devices: ", error);
+            setIsModalOpen(true);  // Optionally show modal on error
+            setCanQueue(false);
+        }
+    };
 
     const toggleSidebar = (card, event) => {
         event.stopPropagation();
@@ -104,25 +135,31 @@ const DemoPlaylists = () => {
     const handleQueue = async () => {
         console.log("Queue button clicked");
 
-        // const isLoggedIn = async () => {
-        //     const loggedIn = await checkSpotifyLogin();
-        //     setLoggedIn(loggedIn);
-        // }
-        // isLoggedIn();
-        // if (!loggedIn) {
-        //     navigate('/');
-        // }
         try {
+            fetchDevices();
+            if (!canQueue) {
+                return;
+            }
             setLoading(true);
             const uris = songs.map((song) => song.uri);
             console.log(uris)
-            const result = await queuePlaylist(uris);
+            const deviceId = devices.devices[0]?.id;
+
+            if (!deviceId) {
+                console.error("No device ID found");
+                return; // Handle the case where deviceId is not available
+            }
+            const result = await queuePlaylist(uris, deviceId);
             setResponse(result);
             console.log(result);
+
         } catch (error) {
             console.log(`Failed to queue songs: ${error.message}`);
         } finally {
             setLoading(false);
+            if (canQueue) {
+                setIsModalQueueOpen(true); // Ensure the modal opens in case of an error
+            }
         }
     };
 
@@ -243,7 +280,7 @@ const DemoPlaylists = () => {
 
                 {/* Buttons outside the scrollable area */}
                 <div className="sidebar-buttons">
-                    <button className="pill-button" onClick={handleQueue} disabled={loading}>
+                    <button className="pill-button" onClick={handleQueue} disabled={loading && canQueue}>
                         {loading ? 'Queuing...' : 'Queue'}
                     </button>
                     <button className="pill-button" onClick={() => setIsSidebarOpen(false)}>Close</button>
@@ -256,6 +293,12 @@ const DemoPlaylists = () => {
                     <SpriteAnimation/> {/* Render the SpriteAnimation here */}
                 </div>
             )}
+            <ModalDevices isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+            <ModalQueue
+                isOpen={isModalQueueOpen && !isModalOpen}
+                onClose={() => setIsModalQueueOpen(false)}
+                totalQueued={response?.totalQueued} // Pass the totalQueued value from the result
+            />
         </div>
     );
 }

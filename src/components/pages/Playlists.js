@@ -6,6 +6,7 @@ import SpriteAnimation from "../SpriteAnimation";
 import Skeleton from "../Skeleton";
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import ModalDevices from "../ModalDevices";
+import ModalQueue from "../ModalQueue";
 
 
 const Playlists = () => {
@@ -23,6 +24,9 @@ const Playlists = () => {
     const [totalTracksSelected, setTotalTracksSelected] = useState(0);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [canQueue, setCanQueue] = useState(false);
+    const [isModalQueueOpen, setIsModalQueueOpen] = useState(false);
+    const [queueResponse, setQueueResponse] = useState(null);
+
 
 
     useEffect(() => {
@@ -31,9 +35,23 @@ const Playlists = () => {
                 setLoadingPlaylists(true); // Set loading to true before fetching
 
                 const data = await getUserPlaylist();
-                if (data) {
-                    const sortedPlaylists = data.sort((a, b) => a.name.localeCompare(b.name));
+                console.log("Fetched playlists data:", data);
+
+                if (data && Array.isArray(data)) {
+                    // Filter out null or undefined entries
+                    const validPlaylists = data.filter((playlist) => playlist !== null);
+
+                    // Sort valid playlists by name
+                    const sortedPlaylists = validPlaylists.sort((a, b) => {
+                        const nameA = a.name || ""; // Use an empty string if 'name' is null or undefined
+                        const nameB = b.name || "";
+                        return nameA.localeCompare(nameB);
+                    });
+
                     setPlaylists(sortedPlaylists);
+                } else {
+                    console.error("Fetched data is not an array or is empty.");
+                    setPlaylists([]); // Set an empty list if data is invalid
                 }
             } catch (error) {
                 console.error("Error fetching playlists:", error);
@@ -222,6 +240,7 @@ const Playlists = () => {
             console.log('DM: ' + deviceId)
             console.log(uris)
             const result = await queuePlaylist(uris, deviceId);
+            setQueueResponse(result);
             //setResponse(result);
             console.log(result);
         } catch (error) {
@@ -229,6 +248,9 @@ const Playlists = () => {
         } finally {
             setLoading(false);
             setIsSidebarOpen(false);
+            if (canQueue) {
+                setIsModalQueueOpen(true); // Ensure the modal opens in case of an error
+            }
         }
     };
 
@@ -266,6 +288,8 @@ const Playlists = () => {
             </div>
 
             <div className="playlists-page">
+                <img src="/full-logo-framed.svg" style={{marginBottom:"-280px"}} alt="Spotify Logo"/>
+
                 <h1 className="playlists-title">Your Playlists</h1>
                 <input
                     type="text"
@@ -286,7 +310,7 @@ const Playlists = () => {
                             Find Songs
                         </button>
                         <p>
-                            Approximate time: {totalTracksSelected/100 + ' '} Seconds
+                            Approximate time: {totalTracksSelected / 100 + ' '} Seconds
                         </p>
                     </div>
                 </div>
@@ -372,6 +396,11 @@ const Playlists = () => {
                 </div>
             )}
             <ModalDevices isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+            <ModalQueue
+                isOpen={isModalQueueOpen && !isModalOpen}
+                onClose={() => setIsModalQueueOpen(false)}
+                totalQueued={queueResponse?.totalQueued} // Pass the totalQueued value from the result
+            />
         </div>
     );
 };

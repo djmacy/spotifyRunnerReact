@@ -36,7 +36,7 @@ const ModalDevices = ({isOpen, onClose}) => {
                   &times;
               </button>
               <h2 className="modal-title">No Devices Found</h2>
-              <p className="modal-text">
+              <p className="modal-text" style={{ color: '#555' }}>
                   We could not find any available devices connected to Spotify. Please open the Spotify app on your device and try again. You will not be allowed to queue music until we find a device.
               </p>
               <button className="modal-button" onClick={onClose}>

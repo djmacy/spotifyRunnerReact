@@ -44,6 +44,7 @@
     flex-direction: column;
     align-items: center; /* Centers all child content */
     justify-content: center;
+    align-items: center;
     margin: 1rem auto; /* Center the entire playlists-page block */
     /*border: 1px dashed blue;*/
 }

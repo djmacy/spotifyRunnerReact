@@ -3,6 +3,10 @@
     height:384px;
     overflow:hidden;
     position:relative;
+    background-image: url('../images/cover.PNG'); /* Set the background image */
+    background-size: 150px 175px; /* Adjust size if necessary */
+    background-position: 340px 100px; /* Adjust positioning if needed */
+    background-repeat: no-repeat; /* Ensure the background doesn't repeat */
 }
 /*spreadsheet-icon*/
 .sprite-animation {
